@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Node.js Interview Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050a08;
+  --surface: #080f0c;
+  --card: #0d1a14;
+  --border: #1a2e22;
+  --accent: #00ff88;
+  --accent2: #00ccff;
+  --accent3: #ffcc00;
+  --accent4: #ff6b6b;
+  --text: #e0ffe8;
+  --muted: #4a7a5a;
+  --done: #00ff88;
+  --tag-bg: #0d1a14;
+  --node-green: #68a063;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,136,0.012) 2px,
+    rgba(0,255,136,0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 24px 22px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(0,255,136,0.04) 0%, transparent 100%);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--node-green);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(104,160,99,0.4);
+}
+
+.brand-info { flex: 1; min-width: 0; }
+
+.brand-text {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.terminal-bar {
+  background: rgba(0,255,136,0.06);
+  border: 1px solid rgba(0,255,136,0.12);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-cursor {
+  width: 6px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: blink-cur 1s step-end infinite;
+  flex-shrink: 0;
+}
+
+@keyframes blink-cur {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.progress-wrap { margin-bottom: 0; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 8px rgba(0,255,136,0.5);
+  width: 0%;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+.mode-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+.nav-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.nav-list::-webkit-scrollbar { width: 3px; }
+.nav-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.nav-item:hover { background: rgba(0,255,136,0.04); color: var(--text); }
+
+.nav-item.active {
+  background: rgba(0,255,136,0.07);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.nav-item.done { color: var(--accent); }
+.nav-item.done .nav-check { background: var(--accent); border-color: var(--accent); }
+.nav-item.done .nav-check::after { opacity: 1; }
+
+.nav-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--muted);
+  min-width: 20px;
+}
+
+.nav-check {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: all 0.2s;
+}
+
+.nav-check::after {
+  content: '✓';
+  font-size: 9px;
+  color: #000;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.sidebar-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+/* ── MAIN ── */
+.main {
+  padding: 36px 44px;
+  max-width: 920px;
+}
+
+.topic-header { margin-bottom: 32px; animation: fadeUp 0.35s ease; }
+
+.topic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,255,136,0.06);
+  border: 1px solid rgba(0,255,136,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+
+.topic-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent);
+  animation: glow-pulse 2s infinite;
+}
+
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 4px var(--accent); }
+  50% { box-shadow: 0 0 12px var(--accent); }
+}
+
+.topic-title {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.topic-title .hl { color: var(--accent); }
+
+.topic-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.meta-pill {
+  background: var(--tag-bg);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+}
+
+.meta-pill.hard { border-color: var(--accent4); color: var(--accent4); }
+.meta-pill.med  { border-color: var(--accent3); color: var(--accent3); }
+.meta-pill.easy { border-color: var(--accent);  color: var(--accent);  }
+
+/* Answer Card */
+.answer-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  animation: fadeUp 0.35s ease;
+  transition: border-color 0.2s;
+}
+
+.answer-card:hover { border-color: rgba(0,255,136,0.2); }
+
+.card-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.card-q {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.expand-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 3px 9px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.2s;
+}
+
+.expand-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.card-body {
+  padding: 0 20px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.card-body.open { max-height: 3000px; padding: 20px; }
+
+.explanation {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #a0c8a8;
+  margin-bottom: 14px;
+}
+
+.explanation strong { color: var(--text); }
+
+pre {
+  background: #020806;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin: 14px 0;
+  position: relative;
+  border-left: 3px solid rgba(0,255,136,0.3);
+}
+
+pre code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #a8d4b0;
+}
+
+.lang-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tip-box {
+  background: rgba(0,204,255,0.06);
+  border: 1px solid rgba(0,204,255,0.2);
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-size: 12.5px;
+  color: #80ccff;
+  margin-top: 12px;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.tip-icon { font-size: 13px; flex-shrink: 0; }
+
+.warn-box {
+  background: rgba(255,107,107,0.06);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-size: 12.5px;
+  color: #ff9999;
+  margin-top: 12px;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.key-points { list-style: none; margin: 10px 0; }
+
+.key-points li {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+  color: #a0c8a8;
+  display: flex;
+  gap: 9px;
+}
+
+.key-points li::before { content: '▸'; color: var(--accent); flex-shrink: 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 14px 0;
+}
+
+th {
+  background: rgba(0,255,136,0.05);
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #a0c8a8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  vertical-align: top;
+}
+
+td:first-child { color: var(--accent); }
+
+code.inline {
+  background: rgba(0,255,136,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--accent);
+}
+
+.mark-done-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  background: rgba(0,255,136,0.06);
+  border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 8px;
+  padding: 9px 15px;
+  color: var(--accent);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.mark-done-btn:hover, .mark-done-btn.marked { background: rgba(0,255,136,0.12); }
+
+.nav-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.ctrl-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.ctrl-btn.primary:hover { background: #33ffaa; }
+
+/* Syntax colours */
+.kw-green  { color: #00ff88; }
+.kw-yellow { color: #ffcc00; }
+.kw-blue   { color: #00ccff; }
+.kw-red    { color: #ff6b6b; }
+.kw-purple { color: #cc99ff; }
+.kw-gray   { color: #5a8a6a; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── QUIZ STYLES ── */
+.quiz-wrap { animation: fadeUp 0.35s ease; }
+
+.quiz-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quiz-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,255,136,0.08);
+  border: 1px solid rgba(0,255,136,0.2);
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--accent);
+}
+
+.quiz-score-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 5px 13px;
+  border-radius: 20px;
+}
+
+.quiz-score-pill span { color: var(--accent); font-weight: 700; }
+
+.quiz-filter-bar {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+.filter-chip.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+.quiz-dots {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.q-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: all 0.3s;
+}
+
+.q-dot.answered  { background: var(--muted); }
+.q-dot.correct-d { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+.q-dot.wrong-d   { background: var(--accent4); }
+.q-dot.current   { background: var(--accent2); transform: scale(1.5); box-shadow: 0 0 6px var(--accent2); }
+
+.quiz-q-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 22px 24px 20px;
+  margin-bottom: 16px;
+}
+
+.quiz-q-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.quiz-q-text {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.quiz-topic-tag {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 6px;
+}
+
+.quiz-options { display: grid; gap: 9px; margin-bottom: 16px; }
+
+.quiz-option {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  transition: all 0.18s;
+  font-size: 13px;
+  color: #90b898;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.quiz-option:hover:not(.disabled) {
+  border-color: var(--accent);
+  background: rgba(0,255,136,0.05);
+  color: var(--text);
+}
+
+.quiz-option.selected { border-color: var(--accent2); background: rgba(0,204,255,0.07); }
+.quiz-option.correct  { border-color: var(--accent)!important; background: rgba(0,255,136,0.08)!important; color: var(--accent)!important; }
+.quiz-option.wrong    { border-color: var(--accent4)!important; background: rgba(255,107,107,0.07)!important; color: var(--accent4)!important; }
+.quiz-option.reveal-correct { border-color: rgba(0,255,136,0.4)!important; background: rgba(0,255,136,0.04)!important; }
+.quiz-option.disabled { cursor: default; }
+
+.opt-letter {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.18s;
+  color: var(--muted);
+}
+
+.quiz-option:hover:not(.disabled) .opt-letter { border-color: var(--accent); color: var(--accent); }
+.quiz-option.correct .opt-letter  { border-color: var(--accent); color: var(--accent); background: rgba(0,255,136,0.12); }
+.quiz-option.wrong .opt-letter    { border-color: var(--accent4); color: var(--accent4); background: rgba(255,107,107,0.12); }
+.quiz-option.reveal-correct .opt-letter { border-color: var(--accent); color: var(--accent); }
+
+.quiz-feedback {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: none;
+  animation: fadeUp 0.2s ease;
+}
+
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct-fb { border-color: rgba(0,255,136,0.25); }
+.quiz-feedback.wrong-fb   { border-color: rgba(255,107,107,0.25); }
+
+.fb-title { font-size: 12.5px; font-weight: 800; margin-bottom: 5px; }
+.correct-fb .fb-title { color: var(--accent); }
+.wrong-fb   .fb-title { color: var(--accent4); }
+
+.fb-explain { font-size: 12px; color: #7aaa88; line-height: 1.6; }
+.fb-explain code { background: rgba(0,255,136,0.08); padding: 1px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--accent); }
+
+.quiz-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+
+/* Results */
+.quiz-results { text-align: center; padding: 36px 16px; animation: fadeUp 0.4s ease; }
+
+.result-ring { width: 130px; height: 130px; margin: 0 auto 22px; position: relative; }
+.result-ring svg { transform: rotate(-90deg); }
+
+.result-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-pct-num { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; }
+.result-pct-label { font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+
+.result-grade { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+.result-sub   { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+
+.result-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  max-width: 360px;
+  margin: 0 auto 24px;
+}
+
+.rb-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.rb-num  { font-size: 20px; font-weight: 900; }
+.rb-lbl  { font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; text-transform: uppercase; }
+.rb-card.correct-rb .rb-num { color: var(--accent); }
+.rb-card.wrong-rb   .rb-num { color: var(--accent4); }
+.rb-card.skipped-rb .rb-num { color: var(--muted); }
+
+.review-list  { text-align: left; margin-top: 20px; }
+.review-item  { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; color: #7aaa88; }
+.review-icon  { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.review-q     { flex: 1; line-height: 1.4; }
+.review-q strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; }
+  .main { padding: 20px 16px; }
+  .topic-title { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">NODE</div>
+        <div class="brand-info">
+          <div class="brand-text">Node.js Prep</div>
+          <div class="brand-sub">Interview Playlist</div>
+        </div>
+      </div>
+      <div class="terminal-bar">
+        <div class="terminal-cursor"></div>
+        <span>node server.js — ready</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span id="prog-text">0 / 16</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+      </div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-study" onclick="setMode('study')">📖 Study</button>
+        <button class="mode-btn" id="btn-quiz"  onclick="setMode('quiz')">⚡ Quiz</button>
+      </div>
+    </div>
+    <ul class="nav-list" id="nav-list"></ul>
+    <div class="sidebar-footer">
+      <div>16 topics · Node.js + Express.js</div>
+      <div style="margin-top:3px;color:#1a3a2a;">Basic + Intermediate level</div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-content"></main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// TOPICS DATA
+// ─────────────────────────────────────────────────────────────────
+const topics = [
+  // ── BASIC ─────────────────────────────────────────────────────
+  {
+    id: 0,
+    title: "What is Node.js?",
+    difficulty: "easy",
+    icon: "🟢",
+    color: "#68a063",
+    iconBg: "rgba(104,160,99,0.12)",
+    section: "Basic",
+    question: "What is Node.js and why is it used?",
+    cards: [
+      {
+        q: "Node.js — Definition & Architecture",
+        icon: "🌐",
+        iconBg: "rgba(0,255,136,0.1)",
+        content: `
+          <p class="explanation"><strong>Node.js</strong> is a <strong>JavaScript runtime</strong> built on Chrome's V8 engine. It lets you run JavaScript <strong>outside the browser</strong> — on servers, CLIs, desktop apps. It uses a <strong>non-blocking, event-driven</strong> architecture making it great for I/O-heavy apps.</p>
+          <pre><code><span class="kw-gray">// Traditional server (Apache/Java) — blocking</span>
+<span class="kw-gray">// Each request = 1 thread (limited)</span>
+<span class="kw-gray">// While waiting for DB → thread is blocked</span>
+
+<span class="kw-gray">// Node.js — non-blocking single thread</span>
+<span class="kw-gray">// While waiting for DB → handles OTHER requests</span>
+<span class="kw-gray">// Callback fires when DB response arrives</span>
+
+<span class="kw-yellow">// Simple HTTP server</span>
+const http = require(<span class="kw-green">'http'</span>);
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { <span class="kw-green">'Content-Type'</span>: <span class="kw-green">'text/plain'</span> });
+  res.end(<span class="kw-green">'Hello from Node.js!'</span>);
+});
+
+server.listen(3000, () => {
+  console.log(<span class="kw-green">'Server running on port 3000'</span>);
+});</code></pre>
+        `
+      },
+      {
+        q: "When to use Node.js — and when NOT to",
+        icon: "✅",
+        iconBg: "rgba(0,255,136,0.08)",
+        content: `
+          <ul class="key-points">
+            <li><strong>REST APIs / GraphQL</strong> — fast, lightweight, handles many concurrent requests</li>
+            <li><strong>Real-time apps</strong> — chat, live dashboards, multiplayer games (WebSockets)</li>
+            <li><strong>Microservices</strong> — small, fast, single-purpose services</li>
+            <li><strong>CLI tools</strong> — npm itself, webpack, vite are all Node.js</li>
+            <li><strong>Streaming apps</strong> — video/audio streaming, file processing pipelines</li>
+          </ul>
+          <div class="warn-box"><span class="tip-icon">⚠️</span><span><strong>Do NOT use Node.js for:</strong> CPU-intensive tasks like image compression, video encoding, complex maths — the single thread gets blocked. Use a Worker Thread or choose Go/Rust/Java for CPU-heavy work.</span></div>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Node.js is NOT multi-threaded but it handles concurrency via the <strong>event loop</strong> — async I/O lets it serve thousands of requests with one thread.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 1,
+    title: "npm & package.json",
+    difficulty: "easy",
+    icon: "📦",
+    color: "#cc3333",
+    iconBg: "rgba(204,51,51,0.1)",
+    section: "Basic",
+    question: "What is npm and what is package.json?",
+    cards: [
+      {
+        q: "npm — Node Package Manager",
+        icon: "📦",
+        iconBg: "rgba(204,51,51,0.1)",
+        content: `
+          <p class="explanation"><strong>npm</strong> is the default package manager for Node.js. It lets you install, update, and manage third-party packages (libraries). It also runs scripts and manages project metadata via <code class="inline">package.json</code>.</p>
+          <pre><code><span class="kw-yellow">// Common npm commands</span>
+npm init          <span class="kw-gray">// create package.json interactively</span>
+npm init -y       <span class="kw-gray">// create with defaults</span>
+
+npm install express          <span class="kw-gray">// install + add to dependencies</span>
+npm install nodemon --save-dev <span class="kw-gray">// dev dependency only</span>
+npm install                  <span class="kw-gray">// install all from package.json</span>
+npm uninstall express        <span class="kw-gray">// remove package</span>
+npm update                   <span class="kw-gray">// update all packages</span>
+
+npm run dev     <span class="kw-gray">// run custom script named "dev"</span>
+npm run build
+npm test
+
+npm list        <span class="kw-gray">// show installed packages</span>
+npm audit       <span class="kw-gray">// check for security issues</span>
+npx create-react-app my-app  <span class="kw-gray">// run package without installing</span></code></pre>
+        `
+      },
+      {
+        q: "package.json — The Project Manifest",
+        icon: "📋",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <pre><code>{
+  <span class="kw-green">"name"</span>: <span class="kw-green">"my-api"</span>,
+  <span class="kw-green">"version"</span>: <span class="kw-green">"1.0.0"</span>,
+  <span class="kw-green">"description"</span>: <span class="kw-green">"My Express API"</span>,
+  <span class="kw-green">"main"</span>: <span class="kw-green">"index.js"</span>,         <span class="kw-gray">// entry point</span>
+  <span class="kw-green">"scripts"</span>: {
+    <span class="kw-green">"start"</span>: <span class="kw-green">"node index.js"</span>,
+    <span class="kw-green">"dev"</span>: <span class="kw-green">"nodemon index.js"</span>,  <span class="kw-gray">// auto-restart on file change</span>
+    <span class="kw-green">"test"</span>: <span class="kw-green">"jest"</span>
+  },
+  <span class="kw-green">"dependencies"</span>: {           <span class="kw-gray">// needed in production</span>
+    <span class="kw-green">"express"</span>: <span class="kw-green">"^4.18.2"</span>,
+    <span class="kw-green">"mongoose"</span>: <span class="kw-green">"^7.0.0"</span>,
+    <span class="kw-green">"dotenv"</span>: <span class="kw-green">"^16.0.0"</span>
+  },
+  <span class="kw-green">"devDependencies"</span>: {        <span class="kw-gray">// only during development</span>
+    <span class="kw-green">"nodemon"</span>: <span class="kw-green">"^3.0.0"</span>,
+    <span class="kw-green">"jest"</span>: <span class="kw-green">"^29.0.0"</span>
+  },
+  <span class="kw-green">"engines"</span>: { <span class="kw-green">"node"</span>: <span class="kw-green">">=18.0.0"</span> }
+}</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span><strong>package-lock.json</strong> locks exact versions so every developer and CI/CD environment installs identical packages. Always commit it to version control.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "Middleware in Express",
+    difficulty: "med",
+    icon: "🔗",
+    color: "#00ccff",
+    iconBg: "rgba(0,204,255,0.1)",
+    section: "Basic",
+    question: "Explain the purpose of middleware in Express.js.",
+    cards: [
+      {
+        q: "What is Middleware?",
+        icon: "🔗",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <p class="explanation">Middleware is a <strong>function that sits between the request and response</strong> in the Express pipeline. It has access to <code class="inline">req</code>, <code class="inline">res</code>, and <code class="inline">next</code>. It can read/modify the request, end the response, or call <code class="inline">next()</code> to pass control to the next middleware.</p>
+          <pre><code><span class="kw-gray">// Request → MW1 → MW2 → MW3 → Route Handler → Response</span>
+
+const express = require(<span class="kw-green">'express'</span>);
+const app = express();
+
+<span class="kw-yellow">// Application-level middleware (runs on EVERY request)</span>
+app.use((req, res, next) => {
+  console.log(<span class="kw-green">\`\${req.method} \${req.url} — \${new Date().toISOString()}\`</span>);
+  next(); <span class="kw-gray">// MUST call next() or response hangs!</span>
+});
+
+<span class="kw-yellow">// Route-level middleware (runs on specific route)</span>
+const authCheck = (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) return res.status(401).json({ error: <span class="kw-red">'No token'</span> });
+  next();
+};
+
+app.get(<span class="kw-green">'/protected'</span>, authCheck, (req, res) => {
+  res.json({ data: <span class="kw-green">'secret stuff'</span> });
+});</code></pre>
+        `
+      },
+      {
+        q: "Types of Middleware",
+        icon: "🗂",
+        iconBg: "rgba(255,204,0,0.1)",
+        content: `
+          <table>
+            <tr><th>Type</th><th>Example</th><th>Use Case</th></tr>
+            <tr><td>Application-level</td><td>app.use(fn)</td><td>Logging, auth, CORS</td></tr>
+            <tr><td>Router-level</td><td>router.use(fn)</td><td>Group route middleware</td></tr>
+            <tr><td>Error-handling</td><td>app.use((err,req,res,next)=>{}</td><td>Centralised error handling</td></tr>
+            <tr><td>Built-in</td><td>express.json()</td><td>Parse request bodies</td></tr>
+            <tr><td>Third-party</td><td>morgan, helmet, cors</td><td>Logging, security, CORS</td></tr>
+          </table>
+          <pre><code><span class="kw-yellow">// Built-in middleware</span>
+app.use(express.json());           <span class="kw-gray">// parse JSON body</span>
+app.use(express.urlencoded({ extended: true })); <span class="kw-gray">// parse form data</span>
+app.use(express.static(<span class="kw-green">'public'</span>)); <span class="kw-gray">// serve static files</span>
+
+<span class="kw-yellow">// Third-party middleware</span>
+const morgan  = require(<span class="kw-green">'morgan'</span>);
+const helmet  = require(<span class="kw-green">'helmet'</span>);
+const cors    = require(<span class="kw-green">'cors'</span>);
+
+app.use(morgan(<span class="kw-green">'dev'</span>));     <span class="kw-gray">// HTTP request logger</span>
+app.use(helmet());          <span class="kw-gray">// security headers</span>
+app.use(cors());            <span class="kw-gray">// enable CORS</span></code></pre>
+        `
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "Basic Express Server",
+    difficulty: "easy",
+    icon: "🚀",
+    color: "#00ff88",
+    iconBg: "rgba(0,255,136,0.1)",
+    section: "Basic",
+    question: "How do you create a basic Express server?",
+    cards: [
+      {
+        q: "Step-by-Step Express Setup",
+        icon: "⚙",
+        iconBg: "rgba(0,255,136,0.1)",
+        content: `
+          <pre><code><span class="kw-gray">// 1. Install Express</span>
+<span class="kw-gray">// npm install express</span>
+
+<span class="kw-yellow">// 2. Create server (index.js)</span>
+const express = require(<span class="kw-green">'express'</span>);
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+<span class="kw-yellow">// 3. Middleware</span>
+app.use(express.json()); <span class="kw-gray">// parse JSON request bodies</span>
+
+<span class="kw-yellow">// 4. Routes</span>
+app.get(<span class="kw-green">'/'</span>, (req, res) => {
+  res.json({ message: <span class="kw-green">'API is running!'</span> });
+});
+
+app.get(<span class="kw-green">'/users'</span>, (req, res) => {
+  res.json([{ id: 1, name: <span class="kw-green">'Alice'</span> }]);
+});
+
+app.post(<span class="kw-green">'/users'</span>, (req, res) => {
+  const { name } = req.body;
+  res.status(201).json({ id: 2, name });
+});
+
+<span class="kw-yellow">// 5. Start server</span>
+app.listen(PORT, () => {
+  console.log(<span class="kw-green">\`🚀 Server running at http://localhost:\${PORT}\`</span>);
+});</code></pre>
+        `
+      },
+      {
+        q: "Route Parameters, Query Strings & Status Codes",
+        icon: "🔍",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <pre><code><span class="kw-yellow">// Route parameters  → /users/42</span>
+app.get(<span class="kw-green">'/users/:id'</span>, (req, res) => {
+  const { id } = req.params;     <span class="kw-gray">// { id: '42' }</span>
+  res.json({ userId: id });
+});
+
+<span class="kw-yellow">// Query strings  → /search?q=node&limit=10</span>
+app.get(<span class="kw-green">'/search'</span>, (req, res) => {
+  const { q, limit = 20 } = req.query;  <span class="kw-gray">// { q: 'node', limit: '10' }</span>
+  res.json({ query: q, limit });
+});
+
+<span class="kw-yellow">// Common HTTP status codes</span>
+res.status(200).json(data);    <span class="kw-gray">// OK</span>
+res.status(201).json(created); <span class="kw-gray">// Created</span>
+res.status(400).json({ error: <span class="kw-red">'Bad Request'</span> });
+res.status(401).json({ error: <span class="kw-red">'Unauthorised'</span> });
+res.status(404).json({ error: <span class="kw-red">'Not Found'</span> });
+res.status(500).json({ error: <span class="kw-red">'Internal Server Error'</span> });</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Organise routes into separate Router files using <code class="inline">express.Router()</code> — keeps your main file clean. Import and mount them with <code class="inline">app.use('/api/users', userRouter)</code>.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "GET vs POST Methods",
+    difficulty: "easy",
+    icon: "↔",
+    color: "#ffcc00",
+    iconBg: "rgba(255,204,0,0.1)",
+    section: "Basic",
+    question: "What is the difference between app.get() and app.post()?",
+    cards: [
+      {
+        q: "HTTP Methods — Full Comparison",
+        icon: "📡",
+        iconBg: "rgba(255,204,0,0.1)",
+        content: `
+          <table>
+            <tr><th>Method</th><th>Purpose</th><th>Body?</th><th>Cached?</th><th>Idempotent?</th></tr>
+            <tr><td>GET</td><td>Fetch/read data</td><td>❌ No</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+            <tr><td>POST</td><td>Create new resource</td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td></tr>
+            <tr><td>PUT</td><td>Replace entire resource</td><td>✅ Yes</td><td>❌ No</td><td>✅ Yes</td></tr>
+            <tr><td>PATCH</td><td>Partial update</td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td></tr>
+            <tr><td>DELETE</td><td>Remove resource</td><td>❌ No</td><td>❌ No</td><td>✅ Yes</td></tr>
+          </table>
+          <pre><code><span class="kw-yellow">// RESTful route design</span>
+app.get(<span class="kw-green">'/products'</span>,        getAllProducts);   <span class="kw-gray">// list all</span>
+app.get(<span class="kw-green">'/products/:id'</span>,   getProductById);  <span class="kw-gray">// get one</span>
+app.post(<span class="kw-green">'/products'</span>,       createProduct);   <span class="kw-gray">// create</span>
+app.put(<span class="kw-green">'/products/:id'</span>,   replaceProduct);  <span class="kw-gray">// full update</span>
+app.patch(<span class="kw-green">'/products/:id'</span>, updateProduct);   <span class="kw-gray">// partial update</span>
+app.delete(<span class="kw-green">'/products/:id'</span>,deleteProduct);   <span class="kw-gray">// delete</span></code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span><strong>Idempotent</strong> = calling the same request multiple times produces the same result. GET, PUT, DELETE are idempotent. POST is NOT — calling it twice creates two resources.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "Environment Variables",
+    difficulty: "easy",
+    icon: "🔐",
+    color: "#ff6b6b",
+    iconBg: "rgba(255,107,107,0.1)",
+    section: "Basic",
+    question: "How do you handle environment variables in Node.js?",
+    cards: [
+      {
+        q: "dotenv & process.env",
+        icon: "🗝",
+        iconBg: "rgba(255,107,107,0.1)",
+        content: `
+          <p class="explanation">Environment variables store <strong>sensitive config</strong> (API keys, DB URIs, ports) outside your codebase. Use the <code class="inline">dotenv</code> package to load them from a <code class="inline">.env</code> file during development.</p>
+          <pre><code><span class="kw-gray"># .env file (NEVER commit to git!)</span>
+PORT=3000
+NODE_ENV=development
+DB_URI=mongodb://localhost:27017/mydb
+JWT_SECRET=mysupersecretkey123
+API_KEY=sk-abc123def456</code></pre>
+          <pre><code><span class="kw-yellow">// Install: npm install dotenv</span>
+
+<span class="kw-yellow">// Load at TOP of entry file</span>
+require(<span class="kw-green">'dotenv'</span>).config();
+
+<span class="kw-yellow">// Access variables</span>
+const PORT    = process.env.PORT || 3000;
+const DB_URI  = process.env.DB_URI;
+const IS_PROD = process.env.NODE_ENV === <span class="kw-green">'production'</span>;
+
+console.log(process.env.JWT_SECRET); <span class="kw-gray">// 'mysupersecretkey123'</span>
+
+<span class="kw-yellow">// Best practice: centralise config</span>
+<span class="kw-gray">// config/env.js</span>
+module.exports = {
+  port:      process.env.PORT || 3000,
+  dbUri:     process.env.DB_URI,
+  jwtSecret: process.env.JWT_SECRET,
+  isProduction: process.env.NODE_ENV === <span class="kw-green">'production'</span>
+};</code></pre>
+          <div class="warn-box"><span class="tip-icon">⚠️</span><span>Always add <code class="inline">.env</code> to <code class="inline">.gitignore</code>! Commit a <code class="inline">.env.example</code> with placeholder values so teammates know what variables are needed.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: "next() Function",
+    difficulty: "med",
+    icon: "➡",
+    color: "#00ccff",
+    iconBg: "rgba(0,204,255,0.1)",
+    section: "Basic",
+    question: "What is the purpose of the next() function in middleware?",
+    cards: [
+      {
+        q: "next() — Passing Control in the Pipeline",
+        icon: "⏩",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <p class="explanation"><code class="inline">next()</code> passes control to the <strong>next middleware or route handler</strong> in the stack. Without it, the request simply hangs. Calling <code class="inline">next(err)</code> skips to the error-handling middleware.</p>
+          <pre><code><span class="kw-yellow">// next() — continue to next middleware</span>
+const logger = (req, res, next) => {
+  console.log(<span class="kw-green">\`[\${req.method}] \${req.url}\`</span>);
+  next(); <span class="kw-gray">// ← pass to next handler</span>
+};
+
+<span class="kw-yellow">// next(err) — skip to error handler</span>
+const validateUser = (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return next(new Error(<span class="kw-red">'Email is required'</span>)); <span class="kw-gray">// jumps to error MW</span>
+  }
+  next(); <span class="kw-gray">// all good — continue</span>
+};
+
+<span class="kw-yellow">// next('route') — skip remaining handlers in current route</span>
+app.get(<span class="kw-green">'/users/:id'</span>,
+  (req, res, next) => {
+    if (req.params.id === <span class="kw-green">'me'</span>) return next(<span class="kw-green">'route'</span>); <span class="kw-gray">// skip</span>
+    next(); <span class="kw-gray">// normal numeric id — continue</span>
+  },
+  (req, res) => res.json({ user: <span class="kw-green">'by ID'</span> })
+);
+
+app.get(<span class="kw-green">'/users/me'</span>, (req, res) => res.json({ user: <span class="kw-green">'current user'</span> }));
+
+<span class="kw-yellow">// Error middleware — MUST have 4 params</span>
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).json({ error: err.message });
+});</code></pre>
+        `
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: "Serving Static Files",
+    difficulty: "easy",
+    icon: "📁",
+    color: "#ffcc00",
+    iconBg: "rgba(255,204,0,0.1)",
+    section: "Basic",
+    question: "How do you serve static files in Express?",
+    cards: [
+      {
+        q: "express.static() — Built-in Static Middleware",
+        icon: "📂",
+        iconBg: "rgba(255,204,0,0.1)",
+        content: `
+          <p class="explanation"><code class="inline">express.static()</code> is a built-in middleware that serves static files (HTML, CSS, JS, images) from a directory. It's the simplest way to host a frontend alongside your API.</p>
+          <pre><code><span class="kw-gray">// Project structure:</span>
+<span class="kw-gray">// ├── public/</span>
+<span class="kw-gray">// │   ├── index.html</span>
+<span class="kw-gray">// │   ├── style.css</span>
+<span class="kw-gray">// │   └── app.js</span>
+<span class="kw-gray">// └── server.js</span>
+
+const express = require(<span class="kw-green">'express'</span>);
+const path    = require(<span class="kw-green">'path'</span>);
+const app     = express();
+
+<span class="kw-yellow">// Serve 'public' folder at root URL</span>
+app.use(express.static(<span class="kw-green">'public'</span>));
+<span class="kw-gray">// http://localhost:3000/          → public/index.html</span>
+<span class="kw-gray">// http://localhost:3000/style.css → public/style.css</span>
+
+<span class="kw-yellow">// Serve under a virtual path prefix</span>
+app.use(<span class="kw-green">'/static'</span>, express.static(<span class="kw-green">'public'</span>));
+<span class="kw-gray">// http://localhost:3000/static/style.css</span>
+
+<span class="kw-yellow">// Absolute path (recommended for production)</span>
+app.use(express.static(path.join(__dirname, <span class="kw-green">'public'</span>)));
+
+<span class="kw-yellow">// SPA (React/Vue) — serve index.html for all unmatched routes</span>
+app.get(<span class="kw-green">'*'</span>, (req, res) => {
+  res.sendFile(path.join(__dirname, <span class="kw-green">'public'</span>, <span class="kw-green">'index.html'</span>));
+});</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Use <code class="inline">path.join(__dirname, 'public')</code> instead of a relative path — it works correctly no matter which directory you run Node.js from.</span></div>
+        `
+      }
+    ]
+  },
+
+  // ── INTERMEDIATE ──────────────────────────────────────────────
+  {
+    id: 8,
+    title: "Event-Driven Architecture",
+    difficulty: "hard",
+    icon: "⚡",
+    color: "#00ff88",
+    iconBg: "rgba(0,255,136,0.1)",
+    section: "Intermediate",
+    question: "Explain the Event-Driven Architecture of Node.js.",
+    cards: [
+      {
+        q: "EventEmitter — The Core Pattern",
+        icon: "📡",
+        iconBg: "rgba(0,255,136,0.1)",
+        content: `
+          <p class="explanation">Node.js is built around an <strong>event-driven model</strong>. The <code class="inline">EventEmitter</code> class lets objects emit named events that listeners (callbacks) respond to. It's the backbone of Node's non-blocking I/O.</p>
+          <pre><code>const { EventEmitter } = require(<span class="kw-green">'events'</span>);
+const emitter = new EventEmitter();
+
+<span class="kw-yellow">// Register a listener</span>
+emitter.on(<span class="kw-green">'data'</span>, (payload) => {
+  console.log(<span class="kw-green">'Received:'</span>, payload);
+});
+
+<span class="kw-yellow">// One-time listener</span>
+emitter.once(<span class="kw-green">'connect'</span>, () => {
+  console.log(<span class="kw-green">'Connected — fires only once!'</span>);
+});
+
+<span class="kw-yellow">// Emit event</span>
+emitter.emit(<span class="kw-green">'data'</span>, { id: 1, value: <span class="kw-green">'hello'</span> });
+emitter.emit(<span class="kw-green">'connect'</span>);
+emitter.emit(<span class="kw-green">'connect'</span>); <span class="kw-gray">// won't fire again (once)</span>
+
+<span class="kw-yellow">// Custom EventEmitter class</span>
+class Database extends EventEmitter {
+  connect(uri) {
+    <span class="kw-gray">// simulate async connection</span>
+    setTimeout(() => {
+      this.emit(<span class="kw-green">'connected'</span>, { uri });
+    }, 500);
+  }
+}
+
+const db = new Database();
+db.on(<span class="kw-green">'connected'</span>, ({ uri }) => console.log(<span class="kw-green">\`DB connected: \${uri}\`</span>));
+db.connect(<span class="kw-green">'mongodb://localhost'</span>);</code></pre>
+        `
+      },
+      {
+        q: "How the Event Loop enables Non-Blocking I/O",
+        icon: "🔄",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <pre><code><span class="kw-yellow">// Node.js Event Loop — simplified</span>
+<span class="kw-gray">// Phase 1: timers       — setTimeout, setInterval callbacks</span>
+<span class="kw-gray">// Phase 2: I/O          — file system, network callbacks</span>
+<span class="kw-gray">// Phase 3: poll         — wait for new I/O events</span>
+<span class="kw-gray">// Phase 4: check        — setImmediate callbacks</span>
+<span class="kw-gray">// Phase 5: close events — socket.on('close', ...)</span>
+
+<span class="kw-yellow">// Non-blocking file read</span>
+const fs = require(<span class="kw-green">'fs'</span>);
+
+console.log(<span class="kw-green">'1 — start'</span>);
+
+fs.readFile(<span class="kw-green">'./data.json'</span>, <span class="kw-green">'utf8'</span>, (err, data) => {
+  if (err) throw err;
+  console.log(<span class="kw-green">'3 — file read'</span>); <span class="kw-gray">// fires WHEN ready</span>
+});
+
+console.log(<span class="kw-green">'2 — continues immediately'</span>);
+<span class="kw-gray">// Output: 1 → 2 → 3</span>
+<span class="kw-gray">// Thread NOT blocked while file reads!</span>
+
+<span class="kw-yellow">// setImmediate vs setTimeout(fn, 0)</span>
+setImmediate(() => console.log(<span class="kw-green">'setImmediate'</span>));
+setTimeout(() => console.log(<span class="kw-green">'setTimeout'</span>), 0);
+<span class="kw-gray">// Order depends on context, but setImmediate fires in check phase</span></code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Node.js handles thousands of concurrent I/O operations with one thread because the OS does the actual waiting — Node just gets notified via the event loop when data is ready.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 9,
+    title: "Streams in Node.js",
+    difficulty: "hard",
+    icon: "🌊",
+    color: "#00ccff",
+    iconBg: "rgba(0,204,255,0.1)",
+    section: "Intermediate",
+    question: "What are streams in Node.js? Name different types.",
+    cards: [
+      {
+        q: "4 Types of Streams",
+        icon: "🌊",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <p class="explanation"><strong>Streams</strong> process data in chunks rather than loading everything into memory at once. Essential for large files, video streaming, or real-time data — they're memory efficient and start processing before the whole data arrives.</p>
+          <table>
+            <tr><th>Type</th><th>Direction</th><th>Example</th></tr>
+            <tr><td>Readable</td><td>Read only</td><td>fs.createReadStream(), http.IncomingMessage</td></tr>
+            <tr><td>Writable</td><td>Write only</td><td>fs.createWriteStream(), http.ServerResponse</td></tr>
+            <tr><td>Duplex</td><td>Read + Write</td><td>TCP sockets, net.Socket</td></tr>
+            <tr><td>Transform</td><td>Read → modify → Write</td><td>zlib.createGzip(), crypto streams</td></tr>
+          </table>
+          <pre><code>const fs = require(<span class="kw-green">'fs'</span>);
+
+<span class="kw-yellow">// ❌ Without streams — loads 1GB into RAM!</span>
+const data = fs.readFileSync(<span class="kw-green">'./huge.csv'</span>);  <span class="kw-red">// memory explosion</span>
+
+<span class="kw-yellow">// ✅ With streams — chunk by chunk</span>
+const readable = fs.createReadStream(<span class="kw-green">'./huge.csv'</span>);
+const writable = fs.createWriteStream(<span class="kw-green">'./output.csv'</span>);
+
+readable.on(<span class="kw-green">'data'</span>, (chunk) => {
+  console.log(<span class="kw-green">\`Chunk: \${chunk.length} bytes\`</span>);
+});
+
+readable.on(<span class="kw-green">'end'</span>,   () => console.log(<span class="kw-green">'Done!'</span>));
+readable.on(<span class="kw-green">'error'</span>, (err) => console.error(err));</code></pre>
+        `
+      },
+      {
+        q: "pipe() — Connecting Streams",
+        icon: "🔗",
+        iconBg: "rgba(255,204,0,0.1)",
+        content: `
+          <pre><code>const fs   = require(<span class="kw-green">'fs'</span>);
+const zlib = require(<span class="kw-green">'zlib'</span>);
+
+<span class="kw-yellow">// pipe() connects streams elegantly</span>
+<span class="kw-gray">// Read → Gzip compress → Write (all streaming!)</span>
+fs.createReadStream(<span class="kw-green">'./big.log'</span>)
+  .pipe(zlib.createGzip())           <span class="kw-gray">// transform stream</span>
+  .pipe(fs.createWriteStream(<span class="kw-green">'./big.log.gz'</span>));
+
+<span class="kw-yellow">// Stream HTTP response directly</span>
+const http = require(<span class="kw-green">'http'</span>);
+http.createServer((req, res) => {
+  res.writeHead(200, { <span class="kw-green">'Content-Type'</span>: <span class="kw-green">'video/mp4'</span> });
+  fs.createReadStream(<span class="kw-green">'./movie.mp4'</span>).pipe(res);
+  <span class="kw-gray">// streams file to client without loading into RAM!</span>
+});
+
+<span class="kw-yellow">// Modern: pipeline() — handles errors automatically</span>
+const { pipeline } = require(<span class="kw-green">'stream/promises'</span>);
+
+await pipeline(
+  fs.createReadStream(<span class="kw-green">'input.txt'</span>),
+  zlib.createGzip(),
+  fs.createWriteStream(<span class="kw-green">'output.txt.gz'</span>)
+);</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Streams are why Node.js is great for media servers and file APIs. A 4GB video can be served to thousands of clients with minimal RAM using readable streams piped to responses.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 10,
+    title: "File Uploads in Express",
+    difficulty: "med",
+    icon: "📤",
+    color: "#ffcc00",
+    iconBg: "rgba(255,204,0,0.1)",
+    section: "Intermediate",
+    question: "How do you handle file uploads in Express?",
+    cards: [
+      {
+        q: "Multer — The Standard File Upload Middleware",
+        icon: "📤",
+        iconBg: "rgba(255,204,0,0.1)",
+        content: `
+          <p class="explanation"><code class="inline">multer</code> is the most popular Express middleware for handling <code class="inline">multipart/form-data</code> (file uploads). It can store files on disk or in memory.</p>
+          <pre><code><span class="kw-gray">// npm install multer</span>
+
+const multer = require(<span class="kw-green">'multer'</span>);
+const path   = require(<span class="kw-green">'path'</span>);
+
+<span class="kw-yellow">// Disk storage with custom naming</span>
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, <span class="kw-green">'uploads/'</span>);             <span class="kw-gray">// save to uploads/ folder</span>
+  },
+  filename: (req, file, cb) => {
+    const ext  = path.extname(file.originalname);
+    const name = Date.now() + <span class="kw-green">'-'</span> + Math.random().toString(36).slice(2);
+    cb(null, name + ext);                 <span class="kw-gray">// unique filename</span>
+  }
+});
+
+<span class="kw-yellow">// File type validation</span>
+const fileFilter = (req, file, cb) => {
+  const allowed = [<span class="kw-green">'image/jpeg'</span>, <span class="kw-green">'image/png'</span>, <span class="kw-green">'image/webp'</span>];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error(<span class="kw-red">'Only images allowed!'</span>), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }  <span class="kw-gray">// 5MB max</span>
+});
+
+<span class="kw-yellow">// Single file upload</span>
+app.post(<span class="kw-green">'/upload'</span>, upload.single(<span class="kw-green">'avatar'</span>), (req, res) => {
+  console.log(req.file);   <span class="kw-gray">// { fieldname, originalname, path, size... }</span>
+  res.json({ url: <span class="kw-green">\`/uploads/\${req.file.filename}\`</span> });
+});
+
+<span class="kw-yellow">// Multiple files</span>
+app.post(<span class="kw-green">'/gallery'</span>, upload.array(<span class="kw-green">'photos'</span>, 10), (req, res) => {
+  const urls = req.files.map(f => <span class="kw-green">\`/uploads/\${f.filename}\`</span>);
+  res.json({ urls });
+});</code></pre>
+        `
+      }
+    ]
+  },
+  {
+    id: 11,
+    title: "Sync vs Async Code",
+    difficulty: "med",
+    icon: "⏱",
+    color: "#ff6b6b",
+    iconBg: "rgba(255,107,107,0.1)",
+    section: "Intermediate",
+    question: "Explain the difference between synchronous and asynchronous code in Node.js.",
+    cards: [
+      {
+        q: "Blocking vs Non-Blocking Operations",
+        icon: "🔄",
+        iconBg: "rgba(255,107,107,0.1)",
+        content: `
+          <pre><code>const fs = require(<span class="kw-green">'fs'</span>);
+
+<span class="kw-yellow">// SYNC — blocks the thread until done</span>
+<span class="kw-red">// ❌ Never use in server request handlers!</span>
+const data = fs.readFileSync(<span class="kw-green">'./data.json'</span>, <span class="kw-green">'utf8'</span>);
+console.log(<span class="kw-green">'Got data'</span>);
+<span class="kw-gray">// While reading, NO other requests can be served!</span>
+
+<span class="kw-yellow">// ASYNC callback — non-blocking</span>
+fs.readFile(<span class="kw-green">'./data.json'</span>, <span class="kw-green">'utf8'</span>, (err, data) => {
+  if (err) throw err;
+  console.log(<span class="kw-green">'Got data'</span>);
+});
+console.log(<span class="kw-green">'Continues immediately'</span>); <span class="kw-gray">// runs BEFORE the callback</span>
+
+<span class="kw-yellow">// ASYNC Promise — cleaner</span>
+const fsPromises = require(<span class="kw-green">'fs/promises'</span>);
+
+async function readConfig() {
+  try {
+    const data = await fsPromises.readFile(<span class="kw-green">'./config.json'</span>, <span class="kw-green">'utf8'</span>);
+    return JSON.parse(data);
+  } catch (err) {
+    console.error(<span class="kw-red">'Failed:'</span>, err.message);
+  }
+}</code></pre>
+          <div class="warn-box"><span class="tip-icon">⚠️</span><span><strong>Never</strong> use <code class="inline">fs.readFileSync</code>, <code class="inline">fs.writeFileSync</code>, or any sync I/O in Express route handlers. It blocks the entire event loop, freezing all other requests.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 12,
+    title: "Clustering in Node.js",
+    difficulty: "hard",
+    icon: "🖥",
+    color: "#cc99ff",
+    iconBg: "rgba(204,153,255,0.1)",
+    section: "Intermediate",
+    question: "What is clustering in Node.js and why is it important?",
+    cards: [
+      {
+        q: "Why Clustering? — Multi-Core Utilisation",
+        icon: "💻",
+        iconBg: "rgba(204,153,255,0.1)",
+        content: `
+          <p class="explanation">Node.js is <strong>single-threaded</strong>. A 16-core CPU would waste 15 cores running one Node process. <strong>Clustering</strong> spawns multiple worker processes — one per CPU core — all sharing the same port and load.</p>
+          <pre><code>const cluster = require(<span class="kw-green">'cluster'</span>);
+const os      = require(<span class="kw-green">'os'</span>);
+const express = require(<span class="kw-green">'express'</span>);
+
+const NUM_CPUS = os.cpus().length;
+
+if (cluster.isPrimary) {
+  console.log(<span class="kw-green">\`Primary PID \${process.pid} — forking \${NUM_CPUS} workers\`</span>);
+
+  <span class="kw-yellow">// Fork one worker per CPU</span>
+  for (let i = 0; i < NUM_CPUS; i++) {
+    cluster.fork();
+  }
+
+  <span class="kw-yellow">// Auto-restart crashed workers</span>
+  cluster.on(<span class="kw-green">'exit'</span>, (worker, code) => {
+    console.log(<span class="kw-green">\`Worker \${worker.process.pid} died (code \${code}) — restarting\`</span>);
+    cluster.fork(); <span class="kw-gray">// spawn replacement</span>
+  });
+
+} else {
+  <span class="kw-yellow">// Worker process — runs the actual server</span>
+  const app = express();
+  app.get(<span class="kw-green">'/'</span>, (req, res) => {
+    res.json({ pid: process.pid });
+  });
+  app.listen(3000, () =>
+    console.log(<span class="kw-green">\`Worker \${process.pid} listening on :3000\`</span>)
+  );
+}</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>In production, use <strong>PM2</strong> — <code class="inline">pm2 start app.js -i max</code> automatically clusters across all CPUs with process management, monitoring, and zero-downtime reloads.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 13,
+    title: "Error Handling Middleware",
+    difficulty: "hard",
+    icon: "🚨",
+    color: "#ff6b6b",
+    iconBg: "rgba(255,107,107,0.1)",
+    section: "Intermediate",
+    question: "How do you implement error handling middleware in Express?",
+    cards: [
+      {
+        q: "Centralised Error Handler — 4-param Signature",
+        icon: "🛡",
+        iconBg: "rgba(255,107,107,0.1)",
+        content: `
+          <p class="explanation">Express error-handling middleware has a <strong>4-parameter signature</strong>: <code class="inline">(err, req, res, next)</code>. It must be registered <strong>after all routes</strong>. Triggered by calling <code class="inline">next(err)</code> or throwing in async routes.</p>
+          <pre><code><span class="kw-yellow">// Custom error class</span>
+class AppError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+  }
+}
+
+<span class="kw-yellow">// Route with error</span>
+app.get(<span class="kw-green">'/users/:id'</span>, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) throw new AppError(<span class="kw-red">'User not found'</span>, 404);
+    res.json(user);
+  } catch (err) {
+    next(err); <span class="kw-gray">// pass to error middleware</span>
+  }
+});
+
+<span class="kw-yellow">// Global error middleware — AFTER all routes</span>
+app.use((err, req, res, next) => {
+  const status  = err.statusCode || 500;
+  const message = err.isOperational ? err.message : <span class="kw-red">'Internal Server Error'</span>;
+
+  if (process.env.NODE_ENV === <span class="kw-green">'development'</span>) {
+    return res.status(status).json({ error: message, stack: err.stack });
+  }
+  res.status(status).json({ error: message });
+});
+
+<span class="kw-yellow">// Catch unhandled promise rejections in Express 5 (auto)</span>
+<span class="kw-gray">// In Express 4 — wrap async routes:</span>
+const asyncHandler = fn => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);</code></pre>
+        `
+      }
+    ]
+  },
+  {
+    id: 14,
+    title: "body-parser Middleware",
+    difficulty: "easy",
+    icon: "📝",
+    color: "#00ff88",
+    iconBg: "rgba(0,255,136,0.1)",
+    section: "Intermediate",
+    question: "Explain the purpose of body-parser middleware.",
+    cards: [
+      {
+        q: "Parsing Request Bodies",
+        icon: "📨",
+        iconBg: "rgba(0,255,136,0.1)",
+        content: `
+          <p class="explanation">HTTP request bodies arrive as raw streams of bytes. <code class="inline">body-parser</code> (or the now built-in <code class="inline">express.json()</code>) parses this raw stream into a usable JavaScript object, available as <code class="inline">req.body</code>.</p>
+          <pre><code><span class="kw-yellow">// Express 4.16+ — built-in, no extra install needed</span>
+app.use(express.json());                          <span class="kw-gray">// Content-Type: application/json</span>
+app.use(express.urlencoded({ extended: true }));  <span class="kw-gray">// HTML form data</span>
+
+<span class="kw-yellow">// Now req.body is available in routes</span>
+app.post(<span class="kw-green">'/users'</span>, (req, res) => {
+  console.log(req.body); <span class="kw-gray">// { name: 'Alice', email: 'alice@example.com' }</span>
+  res.status(201).json(req.body);
+});
+
+<span class="kw-yellow">// OLD way — separate body-parser package</span>
+<span class="kw-gray">// const bodyParser = require('body-parser');</span>
+<span class="kw-gray">// app.use(bodyParser.json());</span>
+<span class="kw-gray">// app.use(bodyParser.urlencoded({ extended: false }));</span>
+
+<span class="kw-yellow">// Custom limit (default 100kb)</span>
+app.use(express.json({ limit: <span class="kw-green">'10mb'</span> }));
+
+<span class="kw-yellow">// What extended: true means in urlencoded</span>
+<span class="kw-gray">// false → uses querystring library (simple key=value)</span>
+<span class="kw-gray">// true  → uses qs library (nested objects, arrays)</span></code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Since Express 4.16, <code class="inline">body-parser</code> is bundled inside Express. You no longer need to install it separately — just use <code class="inline">express.json()</code> and <code class="inline">express.urlencoded()</code>.</span></div>
+        `
+      }
+    ]
+  },
+  {
+    id: 15,
+    title: "CORS in Express",
+    difficulty: "med",
+    icon: "🌐",
+    color: "#00ccff",
+    iconBg: "rgba(0,204,255,0.1)",
+    section: "Intermediate",
+    question: "What is CORS and how do you handle it in Express?",
+    cards: [
+      {
+        q: "What is CORS?",
+        icon: "🔒",
+        iconBg: "rgba(0,204,255,0.1)",
+        content: `
+          <p class="explanation"><strong>CORS (Cross-Origin Resource Sharing)</strong> is a browser security policy that blocks JavaScript from making requests to a different origin (protocol + domain + port) than the one serving the page. Your Express API must explicitly allow trusted origins.</p>
+          <pre><code><span class="kw-gray">// Browser blocks this automatically:</span>
+<span class="kw-gray">// Frontend: http://localhost:3000  (React)</span>
+<span class="kw-gray">// API:      http://localhost:5000  (Express)</span>
+<span class="kw-gray">// → Different port = CORS error!</span>
+
+<span class="kw-yellow">// Simple fix — cors package</span>
+<span class="kw-gray">// npm install cors</span>
+const cors = require(<span class="kw-green">'cors'</span>);
+
+<span class="kw-yellow">// Allow ALL origins (not for production!)</span>
+app.use(cors());
+
+<span class="kw-yellow">// Restrict to specific origins</span>
+app.use(cors({
+  origin: [<span class="kw-green">'http://localhost:3000'</span>, <span class="kw-green">'https://myapp.com'</span>],
+  methods: [<span class="kw-green">'GET'</span>, <span class="kw-green">'POST'</span>, <span class="kw-green">'PUT'</span>, <span class="kw-green">'DELETE'</span>],
+  allowedHeaders: [<span class="kw-green">'Content-Type'</span>, <span class="kw-green">'Authorization'</span>],
+  credentials: true   <span class="kw-gray">// allow cookies / auth headers</span>
+}));</code></pre>
+        `
+      },
+      {
+        q: "Manual CORS Headers & Preflight Requests",
+        icon: "⚙",
+        iconBg: "rgba(255,107,107,0.1)",
+        content: `
+          <pre><code><span class="kw-yellow">// Manual CORS (without the cors package)</span>
+app.use((req, res, next) => {
+  res.setHeader(<span class="kw-green">'Access-Control-Allow-Origin'</span>, <span class="kw-green">'https://myapp.com'</span>);
+  res.setHeader(<span class="kw-green">'Access-Control-Allow-Methods'</span>, <span class="kw-green">'GET,POST,PUT,DELETE'</span>);
+  res.setHeader(<span class="kw-green">'Access-Control-Allow-Headers'</span>, <span class="kw-green">'Content-Type,Authorization'</span>);
+  res.setHeader(<span class="kw-green">'Access-Control-Allow-Credentials'</span>, <span class="kw-green">'true'</span>);
+
+  <span class="kw-yellow">// Handle preflight OPTIONS request</span>
+  if (req.method === <span class="kw-green">'OPTIONS'</span>) {
+    return res.status(204).end(); <span class="kw-gray">// browser checks permissions first</span>
+  }
+  next();
+});
+
+<span class="kw-yellow">// Per-route CORS</span>
+app.get(<span class="kw-green">'/public'</span>, cors(), publicHandler);         <span class="kw-gray">// open to all</span>
+app.post(<span class="kw-green">'/private'</span>, cors({ origin: <span class="kw-green">'https://myapp.com'</span> }), privateHandler);</code></pre>
+          <div class="tip-box"><span class="tip-icon">💡</span><span>Browsers send a <strong>preflight OPTIONS request</strong> before cross-origin POST/PUT/DELETE with custom headers. Your server must respond to OPTIONS with the CORS headers or the actual request will never be sent.</span></div>
+        `
+      }
+    ]
+  }
+];
+
+// ─────────────────────────────────────────────────────────────────
+// QUIZ BANK — 2 questions per topic
+// ─────────────────────────────────────────────────────────────────
+const quizBank = [
+  // 0 — What is Node.js
+  { q: "Which JavaScript engine powers Node.js?", opts: ["SpiderMonkey", "JavaScriptCore", "V8", "Chakra"], correct: 2, explain: "Node.js is built on Google's <code>V8</code> engine — the same engine that runs JavaScript in Chrome. V8 compiles JS to native machine code, making Node.js very fast." },
+  { q: "What type of workloads is Node.js NOT recommended for?", opts: ["REST APIs", "Real-time chat apps", "CPU-intensive tasks like video encoding", "Microservices"], correct: 2, explain: "Node.js uses a single thread for JavaScript. CPU-intensive operations (image processing, encoding, complex calculations) block the event loop, freezing all other requests. Use Worker Threads or choose a multi-threaded language for CPU-heavy work." },
+
+  // 1 — npm & package.json
+  { q: "What is the difference between dependencies and devDependencies?", opts: ["No difference — both install the same way", "dependencies are installed in prod; devDependencies only in development", "devDependencies take priority over dependencies", "dependencies are global; devDependencies are local"], correct: 1, explain: "<code>dependencies</code> are needed at runtime in production (Express, Mongoose). <code>devDependencies</code> are only needed during development (nodemon, jest, eslint). Running <code>npm install --production</code> skips devDependencies." },
+  { q: "What does package-lock.json do?", opts: ["Stores your source code backup", "Locks exact package versions for reproducible installs", "Prevents packages from being updated", "Lists only production dependencies"], correct: 1, explain: "<code>package-lock.json</code> records the exact version tree of every installed package. It ensures that <code>npm install</code> produces the exact same node_modules on any machine or CI/CD environment, preventing 'works on my machine' bugs." },
+
+  // 2 — Middleware
+  { q: "What must middleware always do to avoid hanging a request?", opts: ["Return a value", "Call res.send()", "Call next() or send a response", "Import the next module"], correct: 2, explain: "Every middleware must either call <code>next()</code> to pass control forward, or send a response (res.json(), res.send(), etc). If neither happens, the request hangs indefinitely until it times out." },
+  { q: "How many parameters does an Express error-handling middleware have?", opts: ["2 — req, res", "3 — req, res, next", "4 — err, req, res, next", "5 — err, req, res, next, done"], correct: 2, explain: "Express identifies error-handling middleware by its <strong>4-parameter signature</strong>: <code>(err, req, res, next)</code>. If you define only 3 parameters, Express treats it as a regular middleware and won't pass errors to it." },
+
+  // 3 — Express Server
+  { q: "What does req.params contain in app.get('/users/:id')?", opts: ["The query string", "The request body", "Named URL segments like { id: '42' }", "Request headers"], correct: 2, explain: "<code>req.params</code> contains named route parameters — URL segments preceded by <code>:</code>. For route <code>/users/:id</code> and URL <code>/users/42</code>, <code>req.params</code> is <code>{ id: '42' }</code>." },
+  { q: "What HTTP status code means 'resource created successfully'?", opts: ["200 OK", "201 Created", "204 No Content", "202 Accepted"], correct: 1, explain: "<code>201 Created</code> is the correct status for a successful POST request that creates a new resource. <code>200 OK</code> is for successful GET/PUT. <code>204</code> means success but no body (used for DELETE)." },
+
+  // 4 — GET vs POST
+  { q: "Which HTTP method is idempotent?", opts: ["POST", "PATCH", "PUT", "Both POST and PATCH"], correct: 2, explain: "<code>PUT</code> is idempotent — calling it multiple times with the same data produces the same result (replaces the resource). <code>POST</code> is NOT idempotent — calling it twice creates two separate resources." },
+  { q: "Where does GET send its data?", opts: ["In the request body", "In the URL as query parameters", "In request headers", "In cookies only"], correct: 1, explain: "GET requests send data in the URL as query parameters (e.g. <code>/search?q=node&page=2</code>). GET has no body. This is why GET requests can be bookmarked and cached, but are unsuitable for sensitive or large data." },
+
+  // 5 — Environment Variables
+  { q: "How do you access environment variables in Node.js?", opts: ["env.get('KEY')", "process.env.KEY", "require('env').KEY", "os.getenv('KEY')"], correct: 1, explain: "<code>process.env</code> is a global object in Node.js containing all environment variables. <code>process.env.PORT</code>, <code>process.env.DB_URI</code> etc. The <code>dotenv</code> package loads variables from a <code>.env</code> file into <code>process.env</code>." },
+  { q: "Why should you NEVER commit your .env file to Git?", opts: ["It makes the build slower", "It contains sensitive secrets like API keys and DB passwords", "Git can't parse .env format", "It conflicts with package.json"], correct: 1, explain: ".env files typically contain API keys, database passwords, JWT secrets, and other credentials. Committing them exposes these secrets publicly, leading to security breaches, data theft, and cloud service hijacking." },
+
+  // 6 — next()
+  { q: "What happens when you call next(new Error('oops'))?", opts: ["Throws the error immediately", "Logs to console automatically", "Passes control to the next error-handling middleware", "Terminates the Node process"], correct: 2, explain: "Calling <code>next(err)</code> with any argument (Error or string) signals Express that an error occurred. Express skips all remaining regular middleware and route handlers, jumping directly to the nearest error-handling middleware (4-param signature)." },
+  { q: "If middleware calls neither next() nor res.send(), what happens?", opts: ["The route handler runs automatically", "Express throws an error", "The request hangs until it times out", "next() is called automatically"], correct: 2, explain: "The request will simply hang — no response is ever sent to the client. The client will eventually time out. This is a common bug: forgetting to call <code>next()</code> in middleware that doesn't intend to end the request." },
+
+  // 7 — Static Files
+  { q: "Which Express built-in middleware serves static files?", opts: ["express.json()", "express.router()", "express.static()", "express.files()"], correct: 2, explain: "<code>express.static(dirPath)</code> is a built-in middleware that serves static files (HTML, CSS, JS, images) from the specified directory. Files are served at the root URL unless a virtual prefix is specified." },
+  { q: "Why is path.join(__dirname, 'public') better than just 'public'?", opts: ["It's faster at runtime", "It creates the directory if missing", "It gives an absolute path, working regardless of where Node is launched from", "It auto-compresses files"], correct: 2, explain: "A relative path like <code>'public'</code> is relative to the <em>current working directory</em> where Node was started — which varies. <code>__dirname</code> is always the directory of the current file, so <code>path.join(__dirname, 'public')</code> always resolves correctly." },
+
+  // 8 — Event-Driven Architecture
+  { q: "What class does Node.js use to implement the observer/event pattern?", opts: ["EventBus", "EventEmitter", "Observer", "Dispatcher"], correct: 1, explain: "Node.js provides the built-in <code>EventEmitter</code> class from the <code>events</code> module. Objects extend EventEmitter to emit named events and register listeners with <code>.on()</code>, <code>.once()</code>. It's the foundation of streams, HTTP, and most Node.js APIs." },
+  { q: "What does emitter.once('event', fn) do differently from emitter.on('event', fn)?", opts: ["once() is synchronous, on() is async", "once() fires for every emit, on() fires only once", "once() fires only for the first emit, then auto-removes itself", "No difference"], correct: 2, explain: "<code>once()</code> registers a one-time listener that automatically removes itself after firing once. <code>on()</code> stays registered and fires every time the event is emitted. Use <code>once()</code> for setup events like 'connected' that should only happen once." },
+
+  // 9 — Streams
+  { q: "What is the main advantage of using streams over reading a full file?", opts: ["Streams are always faster", "Streams process chunks, using far less memory", "Streams support more file formats", "Streams automatically retry on error"], correct: 1, explain: "Streams process data in small chunks. A 1GB log file read with <code>readFileSync</code> loads all 1GB into RAM. The same file read with a stream uses only a small chunk buffer (default 64KB), allowing processing of arbitrarily large files with minimal memory." },
+  { q: "Which stream type can both read AND write data?", opts: ["Readable", "Writable", "Transform", "Duplex"], correct: 3, explain: "A <code>Duplex</code> stream can both read and write — like a TCP socket where you both send and receive data. A <code>Transform</code> stream is a special Duplex that modifies data as it passes through (e.g. compression, encryption)." },
+
+  // 10 — File Uploads
+  { q: "What npm package is most commonly used for file uploads in Express?", opts: ["formidable", "busboy", "multer", "multiparty"], correct: 2, explain: "<code>multer</code> is the most widely used multipart/form-data handler for Express. It supports disk storage, memory storage, file type filtering, size limits, and both single and multiple file uploads via a clean API." },
+  { q: "What Content-Type must a form use for file uploads to work?", opts: ["application/json", "text/plain", "application/x-www-form-urlencoded", "multipart/form-data"], correct: 3, explain: "File uploads require <code>multipart/form-data</code> encoding. This format allows binary file data to be included in the form alongside text fields. Setting <code>enctype='multipart/form-data'</code> on the HTML form or using FormData in JS handles this automatically." },
+
+  // 11 — Sync vs Async
+  { q: "Why should you never use fs.readFileSync() inside an Express route handler?", opts: ["It returns the wrong data type", "It blocks the event loop, freezing ALL other requests", "It requires extra permissions", "It only works for text files"], correct: 1, explain: "Node.js is single-threaded. <code>readFileSync</code> blocks the entire thread until the file is read — during this time, no other requests can be processed. With async <code>readFile</code> or <code>fs/promises</code>, the thread is free to handle other requests while waiting for the file." },
+  { q: "What does the callback signature (err, data) follow in Node.js?", opts: ["Promise pattern", "Observer pattern", "Error-first callback convention", "Async/await convention"], correct: 2, explain: "Node.js uses the <strong>error-first callback convention</strong>: the first argument is always an error (null if success), and subsequent arguments contain the result. e.g. <code>fs.readFile(path, (err, data) => {})</code>. This ensures errors are always handled first." },
+
+  // 12 — Clustering
+  { q: "How many worker processes should you typically create in a cluster?", opts: ["Always 4", "1 — same as single process", "One per CPU core (os.cpus().length)", "As many as possible"], correct: 2, explain: "Creating one worker per CPU core (<code>os.cpus().length</code>) is optimal. More workers than cores causes context switching overhead. PM2's <code>-i max</code> flag does this automatically and is the recommended production approach." },
+  { q: "What module does Node.js provide for built-in clustering?", opts: ["worker_threads", "child_process", "cluster", "os"], correct: 2, explain: "The built-in <code>cluster</code> module allows a primary process to fork multiple worker processes sharing the same server port. The OS automatically distributes incoming connections across workers. For thread-based parallelism (shared memory), use <code>worker_threads</code> instead." },
+
+  // 13 — Error Handling Middleware
+  { q: "Where must error-handling middleware be placed in Express?", opts: ["Before all routes", "After all routes and middleware", "At the top of the file", "It doesn't matter"], correct: 1, explain: "Express error-handling middleware MUST be defined AFTER all routes and regular middleware. Express processes handlers in order, so the error handler at the end catches any errors passed via <code>next(err)</code> from any preceding route or middleware." },
+  { q: "In Express, what triggers the error-handling middleware?", opts: ["Any exception anywhere in the app", "Calling next() with no arguments", "Calling next(err) with an error argument", "Using res.error()"], correct: 2, explain: "Calling <code>next(err)</code> with any truthy argument tells Express to skip all normal middleware and route handlers and jump to the nearest error-handling middleware. Uncaught synchronous throws in route handlers also trigger it in Express 5 (or with asyncHandler wrappers in v4)." },
+
+  // 14 — body-parser
+  { q: "Without body-parsing middleware, what value does req.body have?", opts: ["An empty string", "null", "undefined", "The raw buffer bytes"], correct: 2, explain: "Without <code>express.json()</code> or <code>express.urlencoded()</code>, <code>req.body</code> is <code>undefined</code>. The raw request stream isn't automatically parsed. Middleware must read and parse the body stream before it becomes accessible as a JS object." },
+  { q: "What does express.urlencoded({ extended: true }) enable?", opts: ["Larger payload sizes", "Parsing nested objects and arrays in form data using the qs library", "Automatic JSON conversion", "URL encoding for responses"], correct: 1, explain: "With <code>extended: true</code>, Express uses the <code>qs</code> library which supports rich nested objects and arrays in URL-encoded form data. With <code>extended: false</code>, the simpler <code>querystring</code> library is used, which only handles flat key=value pairs." },
+
+  // 15 — CORS
+  { q: "What triggers a CORS error in the browser?", opts: ["Any HTTP request from JavaScript", "A request to a different origin (protocol + domain + port)", "A slow server response", "Using POST instead of GET"], correct: 1, explain: "CORS errors occur when JavaScript makes a request to a different <strong>origin</strong> — a combination of protocol, domain, and port. <code>http://localhost:3000</code> → <code>http://localhost:5000</code> is cross-origin (different port). The browser enforces this; Node.js itself doesn't block anything." },
+  { q: "What is a CORS preflight request?", opts: ["The first GET request to load a page", "An automatic OPTIONS request browsers send before cross-origin requests with custom headers", "A security scan run by the browser", "A cache-warming request"], correct: 1, explain: "For non-simple cross-origin requests (non-GET/POST, or with custom headers like Authorization), the browser automatically sends an <code>OPTIONS</code> preflight request first. The server must respond with appropriate CORS headers, otherwise the actual request is blocked." },
+];
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+const difficultyLabel = { easy: "Basic", med: "Medium", hard: "Hard" };
+let doneSet      = new Set(JSON.parse(localStorage.getItem('node_done') || '[]'));
+let currentTopic = 0;
+let appMode      = 'study';
+
+let quizQuestions  = [];
+let quizIdx        = 0;
+let quizAnswers    = {};
+let quizCorrects   = {};
+let quizFilter     = 'all';
+let quizShowResult = false;
+
+// ─────────────────────────────────────────────────────────────────
+// STUDY HELPERS
+// ─────────────────────────────────────────────────────────────────
+function saveDone() {
+  localStorage.setItem('node_done', JSON.stringify([...doneSet]));
+}
+
+function updateProgress() {
+  const count = doneSet.size;
+  document.getElementById('prog-text').textContent = `${count} / ${topics.length}`;
+  document.getElementById('prog-fill').style.width = `${(count / topics.length) * 100}%`;
+}
+
+function buildNav() {
+  const list = document.getElementById('nav-list');
+  list.innerHTML = '';
+  let lastSection = null;
+  topics.forEach((t, i) => {
+    const section = t.section || 'Basic';
+    if (section !== lastSection) {
+      const sep = document.createElement('li');
+      sep.style.cssText = 'padding:9px 22px 3px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#1a4a2a;font-family:JetBrains Mono,monospace;pointer-events:none;border-top:' + (lastSection ? '1px solid #0d1a14' : 'none') + ';margin-top:' + (lastSection ? '6px' : '0');
+      sep.textContent = section;
+      list.appendChild(sep);
+      lastSection = section;
+    }
+    const li = document.createElement('li');
+    const num = (i + 1).toString().padStart(2, '0');
+    li.className = 'nav-item' + (i === currentTopic && appMode === 'study' ? ' active' : '') + (doneSet.has(i) ? ' done' : '');
+    li.innerHTML = `<span class="nav-num">${num}</span><span style="flex:1;line-height:1.3">${t.title}</span><span class="nav-check"></span>`;
+    li.onclick = () => { currentTopic = i; setMode('study'); };
+    list.appendChild(li);
+  });
+  updateProgress();
+}
+
+function buildCards(cards, topicId) {
+  return cards.map((card, ci) => `
+    <div class="answer-card">
+      <div class="card-header" onclick="toggleCard(${topicId},${ci})">
+        <div class="card-icon" style="background:${card.iconBg}">${card.icon}</div>
+        <div class="card-q">${card.q}</div>
+        <button class="expand-btn" onclick="toggleCard(${topicId},${ci});event.stopPropagation()" id="ebtn-${topicId}-${ci}">SHOW</button>
+      </div>
+      <div class="card-body" id="cbody-${topicId}-${ci}">${card.content}</div>
+    </div>`).join('');
+}
+
+function toggleCard(topicId, ci) {
+  const body = document.getElementById(`cbody-${topicId}-${ci}`);
+  const btn  = document.getElementById(`ebtn-${topicId}-${ci}`);
+  const open = body.classList.toggle('open');
+  btn.textContent = open ? 'HIDE' : 'SHOW';
+}
+
+function markDone(id) {
+  if (doneSet.has(id)) doneSet.delete(id); else doneSet.add(id);
+  saveDone(); render();
+}
+
+function navigate(id) { currentTopic = id; render(); }
+
+// ─────────────────────────────────────────────────────────────────
+// MODE SWITCH
+// ─────────────────────────────────────────────────────────────────
+function setMode(mode) {
+  appMode = mode;
+  document.getElementById('btn-study').classList.toggle('active', mode === 'study');
+  document.getElementById('btn-quiz').classList.toggle('active',  mode === 'quiz');
+  if (mode === 'quiz') startQuiz(); else render();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// QUIZ ENGINE
+// ─────────────────────────────────────────────────────────────────
+function sectionOf(topicIdx) {
+  return (topics[topicIdx]?.section || 'Basic').toLowerCase();
+}
+
+function startQuiz(filter) {
+  if (filter !== undefined) quizFilter = filter;
+  quizQuestions = quizBank.map((q, i) => ({ ...q, bankIdx: i, topicIdx: Math.floor(i / 2) }))
+    .filter(q => quizFilter === 'all' || sectionOf(q.topicIdx) === quizFilter);
+  for (let i = quizQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+  }
+  quizIdx = 0; quizAnswers = {}; quizCorrects = {}; quizShowResult = false;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  buildNav();
+  if (quizShowResult) { renderQuizResults(); return; }
+
+  const mc = document.getElementById('main-content');
+  const q  = quizQuestions[quizIdx];
+  const answered = quizAnswers[quizIdx] !== undefined;
+  const letters  = ['A','B','C','D'];
+
+  const dots = quizQuestions.map((_, i) => {
+    let cls = 'q-dot';
+    if (i === quizIdx) cls += ' current';
+    else if (quizCorrects[i] === true)  cls += ' correct-d';
+    else if (quizCorrects[i] === false) cls += ' wrong-d';
+    else if (quizAnswers[i] !== undefined) cls += ' answered';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  const optHtml = q.opts.map((opt, oi) => {
+    let cls = 'quiz-option';
+    if (answered) {
+      cls += ' disabled';
+      if (oi === q.correct) cls += ' reveal-correct';
+      if (oi === quizAnswers[quizIdx]) cls += (oi === q.correct) ? ' correct' : ' wrong';
+    }
+    return `<button class="${cls}" onclick="answerQuiz(${oi})">
+      <span class="opt-letter">${letters[oi]}</span><span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  const fbHtml = answered ? `
+    <div class="quiz-feedback ${quizCorrects[quizIdx] ? 'correct-fb' : 'wrong-fb'} show">
+      <div class="fb-title">${quizCorrects[quizIdx] ? '✅ Correct!' : '❌ Not quite'}</div>
+      <div class="fb-explain">${q.explain}</div>
+    </div>` : '<div class="quiz-feedback"></div>';
+
+  const isLast = quizIdx === quizQuestions.length - 1;
+
+  mc.innerHTML = `
+    <div class="quiz-wrap">
+      <div class="quiz-topbar">
+        <div class="quiz-badge">⚡ Quiz Mode · ${quizFilter === 'all' ? 'All Levels' : quizFilter.charAt(0).toUpperCase() + quizFilter.slice(1)}</div>
+        <div class="quiz-score-pill">Score <span>${Object.values(quizCorrects).filter(Boolean).length}</span> / ${Object.keys(quizAnswers).length}</div>
+      </div>
+      <div class="quiz-filter-bar">
+        ${['all','basic','intermediate'].map(f => `
+          <button class="filter-chip ${quizFilter===f?'active':''}" onclick="startQuiz('${f}')">
+            ${f==='all'?'🌐 All':f==='basic'?'🟢 Basic':'🟡 Intermediate'}
+          </button>`).join('')}
+      </div>
+      <div class="quiz-dots">${dots}</div>
+      <div class="quiz-q-card">
+        <div class="quiz-q-num">Question ${quizIdx+1} of ${quizQuestions.length}</div>
+        <div class="quiz-q-text">${q.q}</div>
+        <div class="quiz-topic-tag">📌 ${topics[q.topicIdx]?.title || ''}</div>
+      </div>
+      <div class="quiz-options">${optHtml}</div>
+      ${fbHtml}
+      <div class="quiz-actions">
+        ${answered
+          ? (!isLast
+              ? `<button class="ctrl-btn primary" onclick="nextQuestion()">Next →</button>`
+              : `<button class="ctrl-btn primary" onclick="showResults()">🏁 Results</button>`)
+          + `<button class="ctrl-btn" onclick="goToStudyTopic(${q.topicIdx})">📖 Study Topic</button>`
+          : `<button class="ctrl-btn" onclick="skipQuestion()">Skip →</button>`}
+        <button class="ctrl-btn" onclick="startQuiz()">↺ Restart</button>
+      </div>
+    </div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function answerQuiz(chosen) {
+  if (quizAnswers[quizIdx] !== undefined) return;
+  quizAnswers[quizIdx]  = chosen;
+  quizCorrects[quizIdx] = chosen === quizQuestions[quizIdx].correct;
+  renderQuiz();
+}
+
+function skipQuestion() {
+  quizAnswers[quizIdx]  = -1;
+  quizCorrects[quizIdx] = false;
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (quizIdx < quizQuestions.length - 1) { quizIdx++; renderQuiz(); }
+  else showResults();
+}
+
+function showResults() { quizShowResult = true; renderQuiz(); }
+
+function goToStudyTopic(idx) { currentTopic = idx; setMode('study'); }
+
+function renderQuizResults() {
+  const mc      = document.getElementById('main-content');
+  const total   = quizQuestions.length;
+  const correct = Object.values(quizCorrects).filter(Boolean).length;
+  const skipped = Object.values(quizAnswers).filter(v => v === -1).length;
+  const wrong   = total - correct - skipped;
+  const pct     = Math.round((correct / total) * 100);
+  const r = 54, circ = 2 * Math.PI * r, dash = (pct / 100) * circ;
+  const grade    = pct >= 90 ? '🏆 Excellent!' : pct >= 75 ? '🎯 Great Job!' : pct >= 60 ? '👍 Good Effort' : '📚 Keep Studying';
+  const gradeCol = pct >= 90 ? 'var(--accent)' : pct >= 75 ? 'var(--accent3)' : pct >= 60 ? '#ff9944' : 'var(--accent4)';
+
+  const reviewHtml = quizQuestions.map((q, i) => {
+    const ans = quizAnswers[i];
+    const ok  = quizCorrects[i];
+    const icon = ans === -1 ? '⏭' : ok ? '✅' : '❌';
+    return `<div class="review-item">
+      <span class="review-icon">${icon}</span>
+      <div class="review-q">
+        <strong>${q.q.replace(/<[^>]*>/g,'')}</strong>
+        ${!ok && ans !== -1 ? `<span style="color:var(--accent4);font-size:10.5px;">You: ${q.opts[ans]}</span><br>` : ''}
+        ${!ok ? `<span style="color:var(--accent);font-size:10.5px;">Correct: ${q.opts[q.correct]}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  mc.innerHTML = `
+    <div class="quiz-results">
+      <div class="result-ring">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="${r}" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <circle cx="65" cy="65" r="${r}" fill="none" stroke="${gradeCol}" stroke-width="10"
+            stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"
+            style="transition:stroke-dasharray 1s ease"/>
+        </svg>
+        <div class="result-pct">
+          <div class="result-pct-num">${pct}%</div>
+          <div class="result-pct-label">SCORE</div>
+        </div>
+      </div>
+      <div class="result-grade" style="color:${gradeCol}">${grade}</div>
+      <div class="result-sub">${correct} correct out of ${total} questions</div>
+      <div class="result-breakdown">
+        <div class="rb-card correct-rb"><div class="rb-num">${correct}</div><div class="rb-lbl">Correct</div></div>
+        <div class="rb-card wrong-rb"><div class="rb-num">${wrong}</div><div class="rb-lbl">Wrong</div></div>
+        <div class="rb-card skipped-rb"><div class="rb-num">${skipped}</div><div class="rb-lbl">Skipped</div></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+        <button class="ctrl-btn primary" onclick="startQuiz()">↺ Retry Quiz</button>
+        <button class="ctrl-btn" onclick="setMode('study')">📖 Back to Study</button>
+      </div>
+      <div class="review-list">
+        <div style="font-size:11px;font-weight:700;margin-bottom:10px;color:var(--muted);font-family:JetBrains Mono,monospace;text-transform:uppercase;letter-spacing:0.08em;">Question Review</div>
+        ${reviewHtml}
+      </div>
+    </div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// STUDY RENDER
+// ─────────────────────────────────────────────────────────────────
+function render() {
+  appMode = 'study';
+  document.getElementById('btn-study').classList.add('active');
+  document.getElementById('btn-quiz').classList.remove('active');
+
+  const t      = topics[currentTopic];
+  const isDone = doneSet.has(currentTopic);
+  const prev   = currentTopic > 0 ? topics[currentTopic - 1] : null;
+  const next   = currentTopic < topics.length - 1 ? topics[currentTopic + 1] : null;
+  buildNav();
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="topic-header">
+      <div class="topic-tag"><span class="topic-dot"></span> Topic ${(currentTopic+1).toString().padStart(2,'0')} of ${topics.length.toString().padStart(2,'0')} · ${t.section || 'Basic'}</div>
+      <div class="topic-title">${t.title}</div>
+      <div class="topic-meta">
+        <span class="meta-pill ${t.difficulty}">${difficultyLabel[t.difficulty]}</span>
+        <span class="meta-pill">${t.cards.length} sub-topic${t.cards.length>1?'s':''}</span>
+        ${isDone ? '<span class="meta-pill" style="border-color:var(--accent);color:var(--accent);">✓ Revised</span>' : ''}
+      </div>
+    </div>
+
+    <div class="answer-card" style="margin-bottom:18px;background:rgba(0,255,136,0.02);">
+      <div class="card-header" style="cursor:default;">
+        <div class="card-icon" style="background:${t.iconBg};font-size:17px;">${t.icon}</div>
+        <div class="card-q" style="font-size:12.5px;color:var(--muted);">Interview Question</div>
+      </div>
+      <div class="card-body open" style="padding:16px 20px;">
+        <p style="font-size:15px;font-weight:700;color:var(--text);">${t.question}</p>
+      </div>
+    </div>
+
+    ${buildCards(t.cards, t.id)}
+
+    <button class="mark-done-btn ${isDone?'marked':''}" onclick="markDone(${currentTopic})">
+      ${isDone ? '✓ Marked as Revised' : '○ Mark as Revised'}
+    </button>
+
+    <div class="nav-controls">
+      ${prev ? `<button class="ctrl-btn" onclick="navigate(${currentTopic-1})">← ${prev.title}</button>` : '<span></span>'}
+      ${next ? `<button class="ctrl-btn primary" onclick="navigate(${currentTopic+1})">${next.title} →</button>`
+             : `<button class="ctrl-btn primary" onclick="navigate(0)">🎉 Start Over</button>`}
+    </div>`;
+
+  setTimeout(() => {
+    const fb = document.getElementById(`cbody-${t.id}-0`);
+    const bb = document.getElementById(`ebtn-${t.id}-0`);
+    if (fb && !fb.classList.contains('open')) { fb.classList.add('open'); if(bb) bb.textContent='HIDE'; }
+  }, 80);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+render();
+</script>
+</body>
+</html>
